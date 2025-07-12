@@ -1,0 +1,306 @@
+{% extends 'system/base.html' %}
+{% load widget_tweaks %}
+{% block title %}Complete Payment{% endblock %}
+{% block content %}
+<style>
+  .payment-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 15px;
+  }
+  .payment-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  .payment-header {
+    background-color: #007bff;
+    color: white;
+    padding: 1.5rem;
+  }
+  .payment-body {
+    padding: 2rem;
+  }
+  .form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  .form-select,
+  .form-control {
+    height: calc(2.25rem + 12px);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+  }
+  .form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+  .total-amount {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+    margin-top: 1.5rem;
+    padding: 0.75rem;
+    background-color: #f8f9;
+    border-radius: 4px;
+    text-align: right;
+  }
+  .disabled-field {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+  }
+  .form-check {
+    margin-top: 1rem;
+  }
+  .btn-confirm {
+    padding: 10px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+  .info-section {
+    background-color: #f1f3f5;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+  }
+  .info-section p {
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+  }
+  .error-message {
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+  }
+  @media (max-width: 576px) {
+    .payment-body {
+      padding: 1rem;
+    }
+    .total-amount {
+      font-size: 1.1rem;
+    }
+    .btn-confirm {
+      font-size: 1rem;
+    }
+  }
+</style>
+
+<div class="payment-container">
+  <div class="payment-card">
+    <div class="payment-header">
+      <h4 class="mb-0">Complete Payment</h4>
+    </div>
+    <div class="payment-body">
+      <div class="info-section">
+        {% if appointment %}
+          <p><strong>Customer:</strong> {{ appointment.customer.name }}</p>
+          <p><strong>Appointment Service:</strong> {{ appointment.service.name }} (UGX {{ appointment.service.price|floatformat:0 }})</p>
+          <p><strong>Base Price:</strong> UGX {{ appointment.service.price|floatformat:0 }}</p>
+        {% else %}
+          <p><strong>Purchase Type:</strong> Product/Service Purchase (No Appointment)</p>
+          {% if preselected_service %}
+            <p><strong>Selected Service:</strong> {{ preselected_service.name }} (UGX {{ preselected_service.price|floatformat:0 }})</p>
+          {% elif preselected_product %}
+            <p><strong>Selected Product:</strong> {{ preselected_product.name }} (UGX {{ preselected_product.price|floatformat:0 }})</p>
+          {% endif %}
+        {% endif %}
+
+        {% if loyalty_points is not None %}
+          <p>
+            <strong>{{ loyalty_points }} loyalty points available.</strong>
+            {% if loyalty_points >= 100 %}
+              Loyalty Discount: 10%
+            {% elif loyalty_points >= 50 %}
+              Loyalty Discount: 5%
+            {% elif loyalty_points >= 20 %}
+              Loyalty Discount: 3%
+            {% else %}
+              No automatic loyalty discount available.
+            {% endif %}
+            <br><span>Redeemable value: UGX {{ loyalty_points|floatformat:0|add:"00" }}</span>
+          </p>
+        {% endif %}
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label" for="id_customer">Customer (Optional)</label>
+          {{ form.customer|add_class:"form-select" }}
+          {% if form.customer.errors %}
+            <div class="text-danger error-message">{{ form.customer.errors }}</div>
+          {% endif %}
+        </div>
+<!-- Additional Services Dropdown -->
+<div class="form-group">
+  <label class="form-label" for="id_additional_services">Additional Services (Optional)</label>
+  {{ form.additional_services|add_class:"form-select" }}
+  {% if form.additional_services.errors %}
+    <div class="text-danger error-message">{{ form.additional_services.errors }}</div>
+  {% endif %}
+</div>
+
+<!-- Products Dropdown -->
+<div class="form-group">
+  <label class="form-label" for="id_products">Products (Optional)</label>
+  {{ form.products|add_class:"form-select" }}
+  {% if form.products.errors %}
+    <div class="text-danger error-message">{{ form.products.errors }}</div>
+  {% endif %}
+</div>
+
+
+        <div class="form-group">
+          <label class="form-label" for="id_method">Payment Method</label>
+          {{ form.method|add_class:"form-select" }}
+          {% if form.method.errors %}
+            <div class="text-danger error-message">{{ form.method.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="id_coupon">Apply Coupon (Optional)</label>
+          {{ form.coupon|add_class:"form-control" }}
+          {% if form.coupon.errors %}
+            <div class="text-danger error-message">{{ form.coupon.errors }}</div>
+          {% endif %}
+        </div>
+
+        {% if loyalty_points is not None %}
+          <div class="form-check">
+            {{ form.used_loyalty_points|add_class:"form-check-input" }}
+            <label class="form-check-label" for="id_used_loyalty_points">Use Loyalty Points</label>
+          </div>
+        {% endif %}
+
+        <div class="total-amount">
+          Total: UGX <span id="total-amount">{% if appointment %}{{ appointment.service.price|floatformat:0 }}{% elif preselected_service %}{{ preselected_service.price|floatformat:0 }}{% elif preselected_product %}{{ preselected_product.price|floatformat:0 }}{% else %}0{% endif %}</span>
+        </div>
+
+        <button type="submit" class="btn btn-success btn-confirm w-100">Confirm Payment</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const serviceSelect = document.querySelector('#id_additional_services');
+  const productSelect = document.querySelector('#id_products');
+  const customerSelect = document.querySelector('#id_customer');
+  const useLoyaltyPoints = document.querySelector('#id_used_loyalty_points');
+  const totalAmountSpan = document.querySelector('#total-amount');
+  const loyaltyPointValue = {{ loyalty_point_value|default:10.00|floatformat:2 }};
+
+  // Store price data in JavaScript arrays
+  const servicePrices = [
+    {% for service in form.additional_services.field.queryset %}
+      { id: "{{ service.id }}", price: {{ service.price|floatformat:2 }} },
+    {% endfor %}
+  ];
+  const productPrices = [
+    {% for product in form.products.field.queryset %}
+      { id: "{{ product.id }}", price: {{ product.price|floatformat:2 }} },
+    {% endfor %}
+  ];
+
+  // Assign prices to select options
+  servicePrices.forEach(service => {
+    const option = serviceSelect.querySelector(`option[value="${service.id}"]`);
+    if (option) {
+      option.dataset.price = service.price;
+    }
+  });
+  productPrices.forEach(product => {
+    const option = productSelect.querySelector(`option[value="${product.id}"]`);
+    if (option) {
+      option.dataset.price = product.price;
+    }
+  });
+
+  // Disable services or products based on selection
+  function toggleFields() {
+    const hasService = Array.from(serviceSelect.selectedOptions).length > 0;
+    const hasProduct = Array.from(productSelect.selectedOptions).length > 0;
+
+    if (hasService) {
+      productSelect.disabled = true;
+      productSelect.classList.add('disabled-field');
+    } else {
+      productSelect.disabled = false;
+      productSelect.classList.remove('disabled-field');
+    }
+
+    if (hasProduct) {
+      serviceSelect.disabled = true;
+      serviceSelect.classList.add('disabled-field');
+    } else {
+      serviceSelect.disabled = false;
+      serviceSelect.classList.remove('disabled-field');
+    }
+
+    updateTotal();
+  }
+
+  // Update total amount
+  function updateTotal() {
+    let total = 0;
+
+    // Base price from appointment or preselected item
+    {% if appointment %}
+      total += {{ appointment.service.price|floatformat:2 }};
+    {% elif preselected_service %}
+      total += {{ preselected_service.price|floatformat:2 }};
+    {% elif preselected_product %}
+      total += {{ preselected_product.price|floatformat:2 }};
+    {% endif %}
+
+    // Add selected services
+    Array.from(serviceSelect.selectedOptions).forEach(option => {
+      if (option.value && option.dataset.price) {
+        total += parseFloat(option.dataset.price);
+      }
+    });
+
+    // Add selected products
+    Array.from(productSelect.selectedOptions).forEach(option => {
+      if (option.value && option.dataset.price) {
+        total += parseFloat(option.dataset.price);
+      }
+    });
+
+    // Apply loyalty points discount if checked
+    if (useLoyaltyPoints && useLoyaltyPoints.checked && customerSelect.value) {
+      const loyaltyPoints = {{ loyalty_points|default:0|floatformat:2 }};
+      const pointsToUse = Math.min(loyaltyPoints, 100); // Max 100 points
+      const discount = pointsToUse * loyaltyPointValue;
+      total -= discount;
+    }
+
+    total = Math.max(total, 0); // Ensure total is not negative
+    totalAmountSpan.textContent = total.toFixed(0);
+  }
+
+  // Event listeners
+  serviceSelect.addEventListener('change', toggleFields);
+  productSelect.addEventListener('change', toggleFields);
+  if (useLoyaltyPoints) {
+    useLoyaltyPoints.addEventListener('change', updateTotal);
+  }
+  customerSelect.addEventListener('change', () => {
+    if (customerSelect.value) {
+      // Placeholder for AJAX to fetch loyalty points (handled by view for now)
+      updateTotal();
+    } else {
+      if (useLoyaltyPoints) useLoyaltyPoints.checked = false;
+      updateTotal();
+    }
+  });
+
+  // Initialize
+  toggleFields();
+});
+</script>
+{% endblock %}

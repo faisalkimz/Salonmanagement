@@ -1,0 +1,49 @@
+{% extends 'system/base.html' %}
+{% block title %}Coupons{% endblock %}
+{% block content %}
+<div class="container-fluid mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold">Manage Coupons <span class="text-muted small">({{ total_coupons }})</span></h4>
+    <a href="{% url 'add_coupon' %}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Add Coupon
+    </a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>Code</th>
+          <th>Discount</th>
+          <th>Min Spend</th>
+          <th>Expires</th>
+          <th>Services</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for coupon in coupons %}
+        <tr>
+          <td>{{ coupon.code }}</td>
+          <td>{{ coupon.discount_percent }}%</td>
+          <td>UGX {{ coupon.min_spend|default:0 }}</td>
+          <td>{{ coupon.expiry_date }}</td>
+          <td>
+            {% for s in coupon.applicable_services.all %}
+              <span class="badge bg-info text-dark">{{ s.name }}</span>
+            {% empty %}<em>All</em>{% endfor %}
+          </td>
+          <td>
+            <a href="{% url 'edit_coupon' coupon.id %}" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-edit"></i> Edit
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center">No coupons created.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

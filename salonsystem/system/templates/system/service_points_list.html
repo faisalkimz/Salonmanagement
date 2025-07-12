@@ -1,0 +1,199 @@
+{% extends 'system/base.html' %}
+{% load widget_tweaks %}
+{% block title %}Points Configuration{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Points Configuration</h2>
+    {% if messages %}
+    <div class="alert alert-info">
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Business Points Settings -->
+    {% if can_set_loyalty_points or can_set_performance_score %}
+    <h3>Business Points Settings</h3>
+    <form method="post" action="{% url 'service_points_list' %}" class="mb-4">
+        {% csrf_token %}
+        <input type="hidden" name="business_form" value="1">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Default Employee Points per Service</label>
+                {{ business_form.standard_haircut_points|add_class:"form-control" }}
+                {% if business_form.errors.standard_haircut_points %}
+                <div class="text-danger">{{ business_form.errors.standard_haircut_points }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Customer Loyalty Point Value (UGX per point)</label>
+                {{ business_form.loyalty_point_value|add_class:"form-control" }}
+                {% if business_form.errors.loyalty_point_value %}
+                <div class="text-danger">{{ business_form.errors.loyalty_point_value }}</div>
+                {% endif %}
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Business Settings</button>
+    </form>
+    {% endif %}
+
+    <!-- Service Points Configuration -->
+    {% if can_set_loyalty_points or can_set_performance_score %}
+    <h3>Service Points Configuration</h3>
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addServicePointsModal">Add Service Points</button>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Branch</th>
+                <th>Customer Loyalty Points</th>
+                <th>Employee Performance Points</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sp in service_points %}
+            <tr>
+                <td>{{ sp.service.name }}</td>
+                <td>{{ sp.branch.name }}</td>
+                <td>{{ sp.loyalty_points }}</td>
+                <td>{{ sp.employee_points }}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editServicePointsModal{{ sp.id }}">Edit</button>
+                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteServicePointsModal{{ sp.id }}">Delete</button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No service points defined.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Add Service Points Modal -->
+    <div class="modal fade" id="addServicePointsModal" tabindex="-1" aria-labelledby="addServicePointsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" action="{% url 'service_points_list' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="add_service_points_form" value="1">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addServicePointsModalLabel">Add Service Points</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Service</label>
+                            {{ service_points_form.service|add_class:"form-select" }}
+                            {% if service_points_form.errors.service %}
+                            <div class="text-danger">{{ service_points_form.errors.service }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Branch</label>
+                            {{ service_points_form.branch|add_class:"form-select" }}
+                            {% if service_points_form.errors.branch %}
+                            <div class="text-danger">{{ service_points_form.errors.branch }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Customer Loyalty Points</label>
+                            {{ service_points_form.loyalty_points|add_class:"form-control" }}
+                            {% if service_points_form.errors.loyalty_points %}
+                            <div class="text-danger">{{ service_points_form.errors.loyalty_points }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Employee Performance Points</label>
+                            {{ service_points_form.employee_points|add_class:"form-control" }}
+                            {% if service_points_form.errors.employee_points %}
+                            <div class="text-danger">{{ service_points_form.errors.employee_points }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Service Points</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Service Points Modals -->
+    {% for sp in service_points %}
+    <div class="modal fade" id="editServicePointsModal{{ sp.id }}" tabindex="-1" aria-labelledby="editServicePointsModalLabel{{ sp.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" action="{% url 'service_points_list' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="edit_service_points_form" value="1">
+                    <input type="hidden" name="service_points_id" value="{{ sp.id }}">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editServicePointsModalLabel{{ sp.id }}">Edit Service Points</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Service</label>
+                            <select name="service" class="form-select">
+                                {% for service in service_points_form.service.field.queryset %}
+                                <option value="{{ service.id }}" {% if service.id == sp.service.id %}selected{% endif %}>{{ service.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Branch</label>
+                            <select name="branch" class="form-select">
+                                {% for branch in service_points_form.branch.field.queryset %}
+                                <option value="{{ branch.id }}" {% if branch.id == sp.branch.id %}selected{% endif %}>{{ branch.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Customer Loyalty Points</label>
+                            <input type="number" step="0.1" min="0" name="loyalty_points" value="{{ sp.loyalty_points }}" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Employee Performance Points</label>
+                            <input type="number" step="0.1" min="0" name="employee_points" value="{{ sp.employee_points }}" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Service Points Modals -->
+    <div class="modal fade" id="deleteServicePointsModal{{ sp.id }}" tabindex="-1" aria-labelledby="deleteServicePointsModalLabel{{ sp.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" action="{% url 'service_points_list' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="delete_service_points_form" value="1">
+                    <input type="hidden" name="service_points_id" value="{{ sp.id }}">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteServicePointsModalLabel{{ sp.id }}">Delete Service Points</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete points for "{{ sp.service.name }} - {{ sp.branch.name }}"? This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,5 @@
+django-anymail
+twilio
+django-crontab
+celery
+redis

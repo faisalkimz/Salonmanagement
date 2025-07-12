@@ -1,0 +1,205 @@
+{% extends 'system/base.html' %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="container-fluid mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold">Reports Summary</h4>
+    <div>
+      <a href="{% url 'export_report_pdf' %}" class="btn btn-danger btn-sm me-2">
+        <i class="fas fa-file-pdf"></i> Export PDF
+      </a>
+      <a href="{% url 'export_report_excel' %}" class="btn btn-success btn-sm">
+        <i class="fas fa-file-excel"></i> Export Excel
+      </a>
+    </div>
+  </div>
+
+  <!-- Branch Filter Dropdown -->
+  <form method="get" class="mb-4" style="max-width:300px;">
+    <select name="branch" class="form-select" onchange="this.form.submit()">
+      <option value="">All Branches</option>
+      {% for branch in branches %}
+        <option value="{{ branch.id }}" {% if selected_branch == branch.id|stringformat:"s" %}selected{% endif %}>
+          {{ branch.name }}
+        </option>
+      {% endfor %}
+    </select>
+  </form>
+
+  <form method="get" class="row g-2 mb-3">
+    {{ form.start_date.label_tag }} {{ form.start_date }}
+    {{ form.end_date.label_tag }} {{ form.end_date }}
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+  </form>
+
+  <!-- Row 1: Appointments, Completed, Coupons -->
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 p-3">
+        <h6 class="text-muted">Total Appointments</h6>
+        <h3 class="fw-bold">{{ total_appointments }}</h3>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 p-3">
+        <h6 class="text-muted">Completed Appointments</h6>
+        <h3 class="fw-bold">{{ completed_appointments }}</h3>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 p-3">
+        <h6 class="text-muted">Total Coupons</h6>
+        <h3 class="fw-bold">{{ total_coupons }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Revenue, Payroll, Expenses -->
+  <div class="row g-4 mt-3">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 p-3">
+        <h6 class="text-muted">Total Revenue</h6>
+        <h3 class="fw-bold">UGX {{ total_revenue|floatformat:0 }}</h3>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 p-3">
+        <h6 class="text-muted">Total Payroll Paid</h6>
+        <h3 class="fw-bold">UGX {{ total_payroll|floatformat:0 }}</h3>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 p-3">
+        <h6 class="text-muted">Total Expenses</h6>
+        <h3 class="fw-bold">UGX {{ total_expenses|floatformat:0 }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profit Card -->
+  <div class="row g-4 mt-3">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 p-3 bg-success bg-opacity-10">
+        <h6 class="text-muted">Profit</h6>
+        <h3 class="fw-bold text-success">UGX {{ profit|floatformat:0 }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Customers by Visits -->
+  <div class="row g-4 mt-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 p-3">
+        <h6 class="text-muted mb-3">Top Customers by Visits</h6>
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Visits</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for customer in top_customers_by_visits %}
+            <tr>
+              <td>{{ customer.name }}</td>
+              <td>{{ customer.visit_count }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="2" class="text-center">No data</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Top Customers by Spending -->
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 p-3">
+        <h6 class="text-muted mb-3">Top Customers by Spending</h6>
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Total Spent</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for customer in top_customers_by_spending %}
+            <tr>
+              <td>{{ customer.name }}</td>
+              <td>UGX {{ customer.total_spent|floatformat:0 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="2" class="text-center">No data</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example: Revenue by Employee -->
+  <table class="table table-sm mt-4">
+    <thead>
+      <tr>
+        <th>Employee</th>
+        <th>Total Revenue</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in revenue_by_employee %}
+        <tr>
+          <td>{{ row.appointment__employee__user__first_name }} {{ row.appointment__employee__user__last_name }}</td>
+          <td>UGX {{ row.total_revenue|floatformat:0 }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="2" class="text-center">No data</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Promotions Section -->
+  <div class="card mt-4">
+    <div class="card-header">
+      <h5>Current Promotions</h5>
+    </div>
+    <div class="card-body">
+      {% if promotions %}
+        <ul class="list-group mb-3">
+          {% for promo in promotions %}
+            <li class="list-group-item">
+              <strong>{{ promo.subject }}</strong><br>
+              {{ promo.message|linebreaks }}<br>
+              {% if promo.sms_message %}
+                <span class="badge bg-info text-dark">SMS: {{ promo.sms_message }}</span>
+              {% endif %}
+              <span class="badge bg-secondary float-end">{{ promo.created_at|date:"Y-m-d H:i" }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No promotions yet.</p>
+      {% endif %}
+
+      <!-- Promotion Creation Form -->
+      <form method="post" action="{% url 'create_promotion' %}">
+        {% csrf_token %}
+        {{ promotion_form.as_p }}
+        <button type="submit" class="btn btn-success">Broadcast New Promotion</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  setTimeout(function() {
+    window.location.reload();
+  }, 60000); 
+</script>
+{% endblock %}

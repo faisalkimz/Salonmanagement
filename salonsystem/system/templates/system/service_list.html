@@ -1,0 +1,183 @@
+{% extends 'system/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Services{% endblock %}
+
+{% block content %}
+<style>
+    .container-fluid.custom-container {
+        max-width: 1200px;
+        margin: auto;
+        padding: 2rem;
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+        padding-left: 4rem;
+        padding-right: 4rem;
+    }
+
+    .btn {
+        min-width: 100px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+</style>
+
+<div class="container-fluid custom-container">
+    <div class="page-header">
+        <h2 class="fw-bold">Services</h2>
+        <a href="{% url 'add_service' %}" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus"></i> Add Service
+        </a>
+    </div>
+
+    <div class="table-responsive shadow-sm rounded mb-5">
+        <table class="table table-striped align-middle table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Branch</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in services %}
+                <tr>
+                    <td>{{ service.name }}</td>
+                    <td>UGX {{ service.price }}</td>
+                    <td>{{ service.branch.name }}</td>
+                    <td>
+                        {% if service.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <a href="{% url 'edit_service' service.id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        {% if service.is_active %}
+                        <a href="{% url 'buy_product' %}?service_id={{ service.id }}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-money-bill"></i> Complete Payment
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No services found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <hr class="my-5">
+
+    <h3 class="fw-bold mb-4">Products for Sale</h3>
+
+    <div class="card shadow-sm rounded mb-4">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ product_form.non_field_errors }}
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            {{ product_form.name|add_class:"form-control" }}
+                            <label for="id_name">Product Name</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-floating">
+                            {{ product_form.price|add_class:"form-control" }}
+                            <label for="id_price">Price</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-floating">
+                            {{ product_form.stock_quantity|add_class:"form-control" }}
+                            <label for="id_stock_quantity">Stock</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-floating">
+                            {{ product_form.branch|add_class:"form-select" }}
+                            <label for="id_branch">Branch</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-floating">
+                            {{ product_form.sku|add_class:"form-control" }}
+                            <label for="id_sku">SKU</label>
+                        </div>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-center">
+                        <div class="form-check mt-2">
+                            {{ product_form.is_active|add_class:"form-check-input" }}
+                            <label class="form-check-label" for="id_is_active">Active</label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success mt-4">
+                    <i class="fas fa-plus-circle"></i> Add Product
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive shadow-sm rounded">
+        <table class="table table-striped align-middle table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Branch</th>
+                    <th>SKU</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.name }}</td>
+                    <td>UGX {{ product.price }}</td>
+                    <td>{{ product.stock_quantity }}</td>
+                    <td>{{ product.branch.name }}</td>
+                    <td>{{ product.sku }}</td>
+                    <td>
+                        {% if product.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if product.is_active and product.stock_quantity > 0 %}
+                        <a href="{% url 'buy_product' %}?product_id={{ product.id }}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-money-bill"></i> Complete Payment
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">No products added yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

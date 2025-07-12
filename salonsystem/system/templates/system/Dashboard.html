@@ -1,0 +1,165 @@
+{% extends 'system/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row g-4">
+
+        <!-- Total Customers -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card dashboard-card shadow-sm border-0 p-3">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-primary text-white me-3">
+                        <i class="fas fa-users fa-lg"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1 text-muted">Total Customers</h6>
+                        <h4 class="mb-0 fw-bold">{{ total_customers }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointments Today -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card dashboard-card shadow-sm border-0 p-3">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-success text-white me-3">
+                        <i class="fas fa-calendar-check fa-lg"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1 text-muted">Appointments Today</h6>
+                        <h4 class="mb-0 fw-bold">{{ appointments_today }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card dashboard-card shadow-sm border-0 p-3">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-warning text-dark me-3">
+                        <i class="fas fa-coins fa-lg"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1 text-muted">Total Revenue</h6>
+                        <h4 class="mb-0 fw-bold">UGX {{ total_revenue|floatformat:0 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Service -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card dashboard-card shadow-sm border-0 p-3">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-info text-white me-3">
+                        <i class="fas fa-star fa-lg"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1 text-muted">Top Service</h6>
+                        <h4 class="mb-0 fw-bold">{{ top_service.name }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointments Preview -->
+    <div class="card mt-5 shadow-sm border-0">
+        <div class="card-header bg-white border-bottom">
+            <h5 class="mb-0">Recent Appointments</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Customer</th>
+                            <th>Service</th>
+                            <th>Employee</th>
+                            <th>Date & Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appt in recent_appointments %}
+                        <tr>
+                            <td>{{ appt.customer.name }}</td>
+                            <td>{{ appt.service.name }}</td>
+                            <td>{{ appt.employee.user.username }}</td>
+                            <td>{{ appt.date_time|date:"M d, Y H:i" }}</td>
+                            <td>
+                                <span class="badge bg-{{ appt.status|lower|yesno:'success,secondary,danger' }}">
+                                    {{ appt.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No appointments found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" action="{% url 'send_manual_reminders' %}" class="mb-3">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-warning">
+        <i class="fas fa-bell"></i> Send Reminders for Unconfirmed Bookings
+      </button>
+    </form>
+
+    <!-- Promotions History Section -->
+    <div class="card mt-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Recent Promotions</h5>
+        <a href="{% url 'promotion_list' %}" class="btn btn-outline-info btn-sm">View All</a>
+        <a href="{% url 'create_promotion' %}" class="btn btn-success btn-sm ms-2">New Promotion</a>
+      </div>
+      <div class="card-body">
+        {% if promotions %}
+          <ul class="list-group">
+            {% for promo in promotions %}
+              <li class="list-group-item">
+                <strong>{{ promo.subject }}</strong>
+                <div>{{ promo.message|truncatechars:80 }}</div>
+                <small class="text-muted">{{ promo.created_at|date:"Y-m-d H:i" }}</small>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted">No promotions yet.</p>
+        {% endif %}
+      </div>
+    </div>
+</div>
+
+<!-- Custom Dashboard Styling -->
+<style>
+.icon-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+}
+.dashboard-card {
+    border-radius: 1rem;
+    background: linear-gradient(to right, #ffffff, #f8f9fa);
+}
+</style>
+
+<script>
+  setTimeout(function() {
+    window.location.reload();
+  }, 60000); // Refresh every 60 seconds
+</script>
+{% endblock %}

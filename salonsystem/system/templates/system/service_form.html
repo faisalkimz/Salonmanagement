@@ -1,0 +1,52 @@
+{% extends 'system/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h4 class="mb-4 text-center fw-bold text-primary">
+                        <i class="fa fa-cut"></i> {{ title }}
+                    </h4>
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    {{ form.branch|add_class:"form-select" }}
+                                    <label for="id_branch">Branch</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    {{ form.name|add_class:"form-control" }}
+                                    <label for="id_name">Service Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.price|add_class:"form-control" }}
+                                    <label for="id_price">Price</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-check">
+                                    {{ form.is_active|add_class:"form-check-input" }}
+                                    <label class="form-check-label" for="id_is_active">Is Active?</label>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-gradient w-100 mt-4 py-2 fw-semibold shadow-sm">
+                            <i class="fa fa-save"></i> Save
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

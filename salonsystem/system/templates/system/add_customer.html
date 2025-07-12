@@ -1,0 +1,162 @@
+{% extends 'system/base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container-fluid px-0 py-4 mt-4">
+    <div class="row g-4 mx-0">
+        <!-- Add Customer Form -->
+        <div class="col-lg-5">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h4 class="mb-4 text-center fw-bold text-primary">
+                        <i class="fa fa-user-plus"></i> Add Customer
+                    </h4>
+                    {% if messages %}
+                        <div class="alert alert-dismissible fade show {% if 'error' in messages|join:' ' %}alert-danger{% else %}alert-success{% endif %}" role="alert">
+                            {% for message in messages %}
+                                {{ message }}
+                            {% endfor %}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                    <form method="post" novalidate autocomplete="off">
+                        {% csrf_token %}
+                        {{ form.business }} <!-- Hidden input for business -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.name|add_class:"form-control" }}
+                                    <label for="id_name">Name</label>
+                                    {% if form.name.errors %}
+                                        <div class="text-danger">{{ form.name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.phone|add_class:"form-control" }}
+                                    <label for="id_phone">Phone</label>
+                                    {% if form.phone.errors %}
+                                        <div class="text-danger">{{ form.phone.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.email|add_class:"form-control" }}
+                                    <label for="id_email">Email</label>
+                                    {% if form.email.errors %}
+                                        <div class="text-danger">{{ form.email.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.address|add_class:"form-control" }}
+                                    <label for="id_address">Address</label>
+                                    {% if form.address.errors %}
+                                        <div class="text-danger">{{ form.address.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.gender|add_class:"form-select" }}
+                                    <label for="id_gender">Gender</label>
+                                    {% if form.gender.errors %}
+                                        <div class="text-danger">{{ form.gender.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    {{ form.preferences|add_class:"form-control" }}
+                                    <label for="id_preferences">Preferences</label>
+                                    {% if form.preferences.errors %}
+                                        <div class="text-danger">{{ form.preferences.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-gradient w-100 mt-4 py-2 fw-semibold shadow-sm">
+                            <i class="fa fa-plus"></i> Add Customer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer List -->
+        <div class="col-lg-7">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold">Customers</h4>
+                <a href="{% url 'add_customer' %}" class="btn btn-primary">+ Add Customer</a>
+            </div>
+
+            <form method="get" class="mb-3">
+                <div class="input-group">
+                    <input type="text" name="q" placeholder="Search by name, phone or email" class="form-control" value="{{ query|default:'' }}">
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Preferences</th>
+                            <th>Visits</th>
+                            <th>Spent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <td>{{ customer.name }}</td>
+                            <td>{{ customer.phone }}</td>
+                            <td>{{ customer.email }}</td>
+                            <td>{{ customer.preferences|default:"-" }}</td>
+                            <td>{{ customer.total_visits }}</td>
+                            <td>UGX {{ customer.total_spent|floatformat:0 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">No customers found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Button Gradient Style -->
+<style>
+    body {
+        overflow-x: hidden;
+    }
+    .btn-gradient {
+        background: linear-gradient(90deg, #0d6efd 60%, #2563eb 100%);
+        border: none;
+        border-radius: 0.75rem;
+        color: #fff;
+        font-size: 1.05rem;
+        transition: background 0.2s ease, transform 0.1s ease;
+    }
+    .btn-gradient:hover, .btn-gradient:focus {
+        background: linear-gradient(90deg, #2563eb 60%, #0d6efd 100%);
+        transform: translateY(-1px) scale(1.02);
+        color: #fff;
+    }
+    .form-floating > .form-select, .form-floating > .form-control {
+        border-radius: 0.6rem;
+    }
+    .card {
+        background: rgba(255, 255, 255, 0.97);
+    }
+</style>
+{% endblock %}

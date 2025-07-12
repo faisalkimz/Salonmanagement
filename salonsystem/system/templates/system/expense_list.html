@@ -1,0 +1,81 @@
+{% extends 'system/base.html' %}
+{% block title %}Expenses{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold">Expenses</h4>
+    <a href="{% url 'add_expense' %}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Add Expense
+    </a>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-8">
+      <form method="get" class="row g-2">
+        <div class="col-md-5">
+          <select name="branch" class="form-select">
+            <option value="">All Branches</option>
+            {% for branch in branches %}
+            <option value="{{ branch.id }}" {% if branch.id|stringformat:'s' == selected_branch %}selected{% endif %}>
+              {{ branch.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-5">
+          <select name="category" class="form-select">
+            <option value="">All Categories</option>
+            {% for key, label in category_choices %}
+            <option value="{{ key }}" {% if key == selected_category %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+        </div>
+      </form>
+    </div>
+    <div class="col-md-4 text-end">
+      <div class="alert alert-info mb-0">
+        <strong>Total:</strong> UGX {{ total_expenses|floatformat:0 }}
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>Branch</th>
+          <th>Category</th>
+          <th>Amount</th>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for exp in expenses %}
+        <tr>
+          <td>{{ exp.branch.name }}</td>
+          <td>{{ exp.get_category_display }}</td>
+          <td>UGX {{ exp.amount }}</td>
+          <td>{{ exp.date|date:"M d, Y" }}</td>
+          <td>{{ exp.description|default:"-" }}</td>
+          <td>
+            <a href="{% url 'edit_expense' exp.id %}" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-edit"></i> Edit
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center">No expenses recorded.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

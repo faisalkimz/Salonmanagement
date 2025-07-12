@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Report Summary PDF</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h2 { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        td, th { border: 1px solid #444; padding: 8px; }
+    </style>
+</head>
+<body>
+<h2>Salon Report Summary</h2>
+<p>Date: {{ date }}</p>
+<table>
+  <tr><th>Metric</th><th>Value</th></tr>
+  <tr><td>Total Appointments</td><td>{{ total_appointments }}</td></tr>
+  <tr><td>Completed Appointments</td><td>{{ completed_appointments }}</td></tr>
+  <tr><td>Total Revenue</td><td>UGX {{ total_revenue|floatformat:0 }}</td></tr>
+  <tr><td>Total Payroll Paid</td><td>UGX {{ total_payroll|floatformat:0 }}</td></tr>
+  <tr><td>Total Expenses</td><td>UGX {{ total_expenses|floatformat:0 }}</td></tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,50 @@
+{% extends 'system/base.html' %}
+{% load widget_tweaks %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body p-4">
+          <h4 class="mb-4 text-center fw-bold text-primary">
+            <i class="fas fa-code-branch"></i> {{ title }}
+          </h4>
+          <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-md-12">
+                <div class="form-floating">
+                  {{ form.business|add_class:"form-select" }}
+                  <label for="id_business">Business</label>
+                </div>
+              </div>
+              <div class="col-md-12">
+                <div class="form-floating">
+                  {{ form.name|add_class:"form-control" }}
+                  <label for="id_name">Branch Name</label>
+                </div>
+              </div>
+              <div class="col-md-12">
+                <div class="form-floating">
+                  {{ form.address|add_class:"form-control" }}
+                  <label for="id_address">Address</label>
+                </div>
+              </div>
+              <div class="col-md-12">
+                <div class="form-floating">
+                  {{ form.phone|add_class:"form-control" }}
+                  <label for="id_phone">Phone</label>
+                </div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-gradient w-100 mt-4 py-2 fw-semibold shadow-sm">
+              <i class="fas fa-save"></i> Save Branch
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
