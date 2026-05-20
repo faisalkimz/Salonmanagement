@@ -1122,9 +1122,6 @@ def create_user(request):
             form = UserCreationForm(request.POST, business=request.user.business)  # <-- pass business here!
             if form.is_valid():
                 user = form.save(commit=False)
-                password = form.cleaned_data.get("password")
-                if password:
-                    user.set_password(password)
                 user.business = request.user.business
                 user.is_active = True
                 user.save()
@@ -1142,9 +1139,6 @@ def create_user(request):
                 user = form.save(commit=False)
                 user.business = request.user.business
                 user.is_active = True
-                password = form.cleaned_data.get("password")
-                if password:
-                    user.set_password(password)
                 user.save()
                 role_id = request.POST.get('role')
                 if role_id:
